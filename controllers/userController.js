@@ -30,9 +30,9 @@ class userController{
 
         const isMatch = await user.comparePassword(password)
         if(!isMatch) return res.json({success: false, message: "pass no match"});
-        // jwt.sign({userId: user._id})
+        const token = jwt.sign({userId: user._id}, process.env.JWT_SECRET, {expiresIn:'1d'})
 
-        res.json({success: true, user})
+        res.json({success: true, user, token})
     }
 }
 
