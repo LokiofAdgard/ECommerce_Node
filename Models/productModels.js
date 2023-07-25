@@ -6,6 +6,10 @@ const productSchema = mongoose.Schema(
             type: String,
             required: [true, "Please Enter product name"]
         },
+        author: {
+            type: String,
+            required: [true, "Please Enter product name"]
+        },
         quantity: {
             type: Number,
             required: [true, "Please Enter product number"],
@@ -13,6 +17,10 @@ const productSchema = mongoose.Schema(
         },
         price: {
             type: Number,
+            required: true
+        },
+        genre: {
+            type: String,
             required: true
         },
         image: {
