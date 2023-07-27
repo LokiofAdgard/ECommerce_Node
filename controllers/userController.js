@@ -6,10 +6,13 @@ class userController{
     addUser = async(req, res) => {
         try{
             const user = await User.create(req.body)
-            res.status(200).json(user)
+            res.status(200).json({success: true})
         } catch(e) {
-            console.log(e.message)
-            res.status(500).json({message: e.message})
+            if(e.code=11000){
+                res.status(200).json({success: false, message: 'Email or Username Already In Use'})
+            } else{
+                res.status(500).json({message: e.message})
+            }
         }
     };
 
