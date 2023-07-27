@@ -1,5 +1,5 @@
 const Cart = require('../models/cartModel');
-const User = require('../models/userModel');
+const Product = require('../models/productModels')
 
 class cartController{
 
@@ -14,8 +14,8 @@ class cartController{
 
     addCart = async(req, res) => {
         try{
-            const user = await Cart.create(req.body)
-            res.status(200).json(user)
+            const cart = await Cart.create(req.body)
+            res.status(200).json(cart)
         } catch(e) {
             console.log(e.message)
             res.status(500).json({message: e.message})
@@ -24,12 +24,13 @@ class cartController{
 
     placeCart = async(req, res) => {
         try {
-            const cart = await Cart.findOneAndUpdate({owner: 'Johnathan'}, {placed: true});
+            // console.log(req.body.owner);
+            const cart = await Cart.findOneAndUpdate({owner: req.body.owner}, {placed: true});
             if(!cart){
                 return res.status(404).json({message: 'Cannot find Product'})
             }
-            const newCart = await Cart.findById(id);
-            res.status(200).json(newCart);
+            // const newCart = await Cart.findById(id);
+            res.status(200).json({success: true});
         } catch(e) {
             res.status(500).json({message: e.message})
         }
@@ -37,20 +38,25 @@ class cartController{
 
     addToCart = async(req, res) => {
         try {
-            const query = { owner:req.body.owner, "products.product": req.body.product };
-            const updateDocument = {$inc: { "products.$.quantity": req.body.quantity }};
-            const result = await Cart.updateOne(query, updateDocument);
+            const product = await Product.findOne({name:req.body.product});
+            if(product.quantity >= req.body.quantity){
+                const result0 = await Product.updateOne({name:req.body.product}, {$inc: { quantity: -(req.body.quantity) }});
 
-            if(result.modifiedCount==0){
-                console.log('here')
-                const result2 = await Cart.updateOne({ owner:req.body.owner }, {
-                    $push: {
-                        products: {product:req.body.product, quantity:req.body.quantity}
-                    }
-                });
+                const query = { owner:req.body.owner, "products.product": req.body.product };
+                const updateDocument = {$inc: { "products.$.quantity": req.body.quantity }};
+                const result = await Cart.updateOne(query, updateDocument);
+
+                if(result.modifiedCount==0){
+                    const result2 = await Cart.updateOne({ owner:req.body.owner }, {
+                        $push: {
+                            products: {product:req.body.product, quantity:req.body.quantity, price: req.body.price}
+                        }
+                    });
+                }
+                res.status(200).json(result0);
+            } else {
+                res.status(500).json({success:false, message:'not enough stock'});
             }
-
-            res.status(200).json(result);
         } catch(e) {
             res.status(500).json({message: e.message})
         }
@@ -63,6 +69,17 @@ class cartController{
             const result = await Cart.updateOne(query, updateDocument);
 
             res.status(200).json(result);
+        } catch(e) {
+            res.status(500).json({message: e.message})
+        }
+    };
+
+    getCart = async (req, res, next) => {
+        try {
+            // console.log(req.body);
+            const cart = await Cart.findOne({owner: req.body.owner});
+            // console.log(cart);
+            res.status(200).json(cart.products);
         } catch(e) {
             res.status(500).json({message: e.message})
         }
