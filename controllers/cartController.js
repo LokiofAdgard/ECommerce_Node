@@ -53,9 +53,9 @@ class cartController{
                         }
                     });
                 }
-                res.status(200).json(result0);
+                res.status(200).json({success:true});
             } else {
-                res.status(500).json({success:false, message:'not enough stock'});
+                res.status(200).json({success:false, message:'not enough stock'});
             }
         } catch(e) {
             res.status(500).json({message: e.message})
