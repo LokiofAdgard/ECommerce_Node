@@ -62,6 +62,20 @@ class cartController{
         }
     };
 
+    removeFromCart = async(req,res) => {
+        try{
+            const query = { owner:req.body.owner};
+            const updateDocument = { $pull: { 'products': { product: req.body.product } } };
+            const result = await Cart.updateOne(query, updateDocument);
+
+            const result1 = await Product.updateOne({'name': req.body.product}, {$inc: { "quantity": req.body.quantity }});
+
+            res.status(200).json((await Cart.findOne({owner: req.body.owner})).products);
+        } catch(e) {
+            res.status(500).json({message: e.message})
+        }
+    }
+
     updateQuantity = async(req, res) => {
         try {
             const query = { owner:req.body.owner, "products.product": req.body.product };
